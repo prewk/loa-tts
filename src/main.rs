@@ -28,32 +28,47 @@ pub struct MyInputState {
 }
 
 fn setup(
-    commands: &mut Commands, asset_server: Res<AssetServer>
+    commands: &mut Commands,
+    asset_server: Res<AssetServer>,
+    mut materials: ResMut<Assets<ColorMaterial>>
 ) {
     commands
         // 2d camera
         .spawn(CameraUiBundle::default())
         // texture
-        .spawn(TextBundle {
+        .spawn(NodeBundle {
             style: Style {
-                align_self: AlignSelf::FlexEnd,
+                size: Size::new(Val::Percent(100.0), Val::Percent(100.0)),
+                position_type: PositionType::Absolute,
+                justify_content: JustifyContent::Center,
+                align_items: AlignItems::FlexEnd,
                 ..Default::default()
             },
-            text: Text {
-                value: "---".to_string(),
-                font: asset_server.load("fonts/LondrinaSolid-Black.ttf"),
-                style: TextStyle {
-                    font_size: 240.0,
-                    color: Color::WHITE,
-                    alignment: TextAlignment {
-                        horizontal: HorizontalAlign::Center,
-                        vertical: VerticalAlign::Center,
-                    }
-                },
-            },
+            material: materials.add(Color::NONE.into()),
             ..Default::default()
         })
-        .with(Letter);
+        .with_children(|parent| {
+            parent.spawn(TextBundle {
+                style: Style {
+                    align_self: AlignSelf::Center,
+                    ..Default::default()
+                },
+                text: Text {
+                    value: "---".to_string(),
+                    font: asset_server.load("fonts/LondrinaSolid-Black.ttf"),
+                    style: TextStyle {
+                        font_size: 360.0,
+                        color: Color::WHITE,
+                        alignment: TextAlignment {
+                            horizontal: HorizontalAlign::Center,
+                            vertical: VerticalAlign::Center,
+                        }
+                    },
+                },
+                ..Default::default()
+            })
+                .with(Letter);
+        });
 }
 
 fn update_letters(
@@ -65,7 +80,11 @@ fn update_letters(
     for ev in state.keys.iter(&ev_keys) {
         if ev.state.is_pressed() {
             for mut text in query.iter_mut() {
-                text.value = format!("{:?}", ev.key_code.unwrap());
+                if let Some(KeyCode::LBracket) = ev.key_code {
+                    text.value = "Å".to_string();
+                } else {
+                    text.value = format!("{:?}", ev.key_code.unwrap());
+                }
 
                 speaker.tts.speak(text.value.clone(), true).unwrap();
             }
