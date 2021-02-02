@@ -15,6 +15,10 @@ jobs:
           toolchain: stable
           default: true
 
+      - name: Install prereqs
+        run: |
+          apt-get install -y cmake musl musl-dev
+
       - name: Build binary
         uses: actions-rs/cargo@v1
         with:
