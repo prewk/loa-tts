@@ -9,7 +9,13 @@ struct Speaker {
 }
 
 fn main() {
+
+    #[cfg(target_os = "macos")]
     let mut tts = TTS::new(Backends::AppKit).unwrap();
+    #[cfg(target_os = "linux")]
+    let mut tts = TTS::new(Backends::SpeechDispatcher).unwrap();
+    #[cfg(target_os = "windows")]
+    let mut tts = TTS::new(Backends::WinRT).unwrap();
 
     App::build()
         .add_startup_system(setup.system())
