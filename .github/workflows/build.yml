@@ -23,15 +23,15 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: build
-          args: --release --target x86_64-unknown-linux-musl
+          args: --release --target x86_64-unknown-linux-gnu
           use-cross: true
 
       - name: Optimize and package binary
         run: |
-          cd target/x86_64-unknown-linux-musl/release
+          cd target/x86_64-unknown-linux-gnu/release
           strip loa-tts
           chmod +x loa-tts
-          tar -c loa-tts assets | gzip > loa-tts.tar.gz
+          tar -c loa-tts ../../assets | gzip > loa-tts.tar.gz
       - name: Upload binary
         uses: actions/upload-release-asset@v1
         env:
@@ -39,7 +39,7 @@ jobs:
         with:
           asset_content_type: application/octet-stream
           asset_name: loa-tts-${{ github.event.release.tag-name }}-linux-x86_64.tar.gz
-          asset_path: target/x86_64-unknown-linux-musl/release/loa-tts.tar.gz
+          asset_path: target/x86_64-unknown-linux-gnu/release/loa-tts.tar.gz
           upload_url: ${{ github.event.release.upload_url }}
 
   macos-x86_64:
@@ -67,7 +67,7 @@ jobs:
           chmod +x loa-tts
           mkdir dmg
           mv loa-tts dmg/
-          mv assets dmg/
+          mv ../../assets dmg/
           hdiutil create -fs HFS+ -srcfolder dmg -volname loa-tts loa-tts.dmg
       - name: Upload binary
         uses: actions/upload-release-asset@v1
@@ -102,7 +102,7 @@ jobs:
           cd target/release
           mkdir pack
           move loa-tts.exe rel
-          move assets rel
+          move ../../assets rel
           tar -a -c -f rel.zip rel
 
       - name: Upload binary
