@@ -17,7 +17,7 @@ jobs:
 
       - name: Install prereqs
         run: |
-          apt-get install -y cmake musl musl-dev
+          apt-get install -y pkg-config libx11-dev libasound2-dev libudev-dev
 
       - name: Build binary
         uses: actions-rs/cargo@v1
@@ -31,7 +31,7 @@ jobs:
           cd target/x86_64-unknown-linux-musl/release
           strip loa-tts
           chmod +x loa-tts
-          tar -c loa-tts | gzip > loa-tts.tar.gz
+          tar -c loa-tts assets | gzip > loa-tts.tar.gz
       - name: Upload binary
         uses: actions/upload-release-asset@v1
         env:
@@ -67,6 +67,7 @@ jobs:
           chmod +x loa-tts
           mkdir dmg
           mv loa-tts dmg/
+          mv assets dmg/
           hdiutil create -fs HFS+ -srcfolder dmg -volname loa-tts loa-tts.dmg
       - name: Upload binary
         uses: actions/upload-release-asset@v1
@@ -96,12 +97,20 @@ jobs:
           args: --release
           use-cross: true
 
+      - name: Package binary
+        run: |
+          cd target/release
+          mkdir pack
+          move loa-tts.exe rel
+          move assets rel
+          tar -a -c -f rel.zip rel
+
       - name: Upload binary
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           asset_content_type: application/octet-stream
-          asset_name: loa-tts-${{ github.event.release.tag-name }}-windows-x86_64.exe
-          asset_path: target/release/loa-tts.exe
+          asset_name: loa-tts-${{ github.event.release.tag-name }}-windows-x86_64.zip
+          asset_path: target/release/rel.zip
           upload_url: ${{ github.event.release.upload_url }}
